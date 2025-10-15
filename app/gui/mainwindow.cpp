@@ -79,6 +79,7 @@ using namespace oscpkt; // OSC specific stuff
 #include "widgets/sonicpieditor.h"
 #include "widgets/sonicpilog.h"
 #include "widgets/sonicpimetro.h"
+#include "sonicpiproject.h"
 
 #include "utils/ruby_help.h"
 
@@ -134,7 +135,9 @@ MainWindow::MainWindow(QApplication& app, QSplashScreen* splash)
     show_rec_icon_a = false;
     restoreDocPane = false;
     focusMode = false;
-    version = "4.6.0";
+    currentProject = nullptr;
+    version = "0.1.0";
+    upstream_version = "4.6.0";
     latest_version = "";
     version_num = 0;
     latest_version_num = 0;
@@ -210,7 +213,7 @@ MainWindow::MainWindow(QApplication& app, QSplashScreen* splash)
     loadUserShortcuts();
     createStatusBar();
     createInfoPane();
-    setWindowTitle(tr("Sonic Pi"));
+    setWindowTitle(tr("Sonic Pi for Agents"));
 
     createToolBar();
     updateShortcuts();
@@ -358,7 +361,7 @@ void MainWindow::showWelcomeScreen()
         QTextBrowser* startupPane = new QTextBrowser;
         startupPane->setFixedSize(ScaleHeightForDPI(600), ScaleHeightForDPI(650));
         startupPane->setWindowIcon(QIcon(":images/icon-smaller.png"));
-        startupPane->setWindowTitle(tr("Welcome to Sonic Pi"));
+        startupPane->setWindowTitle(tr("Welcome to Sonic Pi for Agents"));
         addUniversalCopyShortcuts(startupPane);
         QString styles = ScalePxInStyleSheet(readFile(":/theme/light/doc-styles.css"));
         startupPane->document()->setDefaultStyleSheet(styles);
@@ -1733,6 +1736,98 @@ bool MainWindow::saveAs()
     {
         return false;
     }
+}
+
+void MainWindow::newProject()
+{
+    QString folderPath = QFileDialog::getExistingDirectory(
+        this,
+        tr("Select Folder for New Project"),
+        QDir::homePath(),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (folderPath.isEmpty())
+        return;
+
+    SonicPiProject* project = SonicPiProject::create(folderPath, this);
+    if (!project)
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to create project"));
+        return;
+    }
+
+    // Close existing project
+    if (currentProject)
+    {
+        delete currentProject;
+    }
+
+    currentProject = project;
+
+    // Connect external change signal
+    connect(currentProject, &SonicPiProject::bufferChangedExternally,
+            this, &MainWindow::onBufferChangedExternally);
+
+    // Load all buffers from project files
+    for (int i = 0; i < 10; i++)
+    {
+        QString content = currentProject->readBuffer(i);
+        workspaces[i]->setText(content);
+    }
+
+    std::cout << "[GUI] - Created new project: " << folderPath.toStdString() << std::endl;
+}
+
+void MainWindow::openProject()
+{
+    QString folderPath = QFileDialog::getExistingDirectory(
+        this,
+        tr("Open Project Folder"),
+        QDir::homePath(),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (folderPath.isEmpty())
+        return;
+
+    SonicPiProject* project = SonicPiProject::load(folderPath, this);
+    if (!project)
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load project"));
+        return;
+    }
+
+    // Close existing project
+    if (currentProject)
+    {
+        delete currentProject;
+    }
+
+    currentProject = project;
+
+    // Connect external change signal
+    connect(currentProject, &SonicPiProject::bufferChangedExternally,
+            this, &MainWindow::onBufferChangedExternally);
+
+    // Load all buffers from project files
+    for (int i = 0; i < 10; i++)
+    {
+        QString content = currentProject->readBuffer(i);
+        workspaces[i]->setText(content);
+    }
+
+    std::cout << "[GUI] - Opened project: " << folderPath.toStdString() << std::endl;
+}
+
+void MainWindow::onBufferChangedExternally(int bufferId, const QString& newContent)
+{
+    if (bufferId < 0 || bufferId >= 10)
+        return;
+
+    std::cout << "[GUI] - External change detected for buffer " << bufferId << std::endl;
+
+    // TODO: Apply smart diff instead of full replacement
+    // For now, just replace the content
+    workspaces[bufferId]->setText(newContent);
 }
 
 void MainWindow::resetErrorPane()
@@ -3284,6 +3379,12 @@ void MainWindow::createToolBar()
     exitAct = new QAction(tr("Exit"), this);
     connect(exitAct, &QAction::triggered, qApp, &QApplication::closeAllWindows);
 
+    newProjectAct = new QAction(tr("New Project..."), this);
+    connect(newProjectAct, SIGNAL(triggered()), this, SLOT(newProject()));
+
+    openProjectAct = new QAction(tr("Open Project..."), this);
+    connect(openProjectAct, SIGNAL(triggered()), this, SLOT(openProject()));
+
     std::cout << "[GUI] - creating tool bar" << std::endl;
 
     runAct = new QAction(theme->getRunIcon(), tr("Run"), this);
@@ -3600,6 +3701,10 @@ void MainWindow::createToolBar()
     toolBar->addAction(infoAct);
     toolBar->addAction(helpAct);
     toolBar->addAction(prefsAct);
+
+    projectMenu = menuBar()->addMenu(tr("Project"));
+    projectMenu->addAction(newProjectAct);
+    projectMenu->addAction(openProjectAct);
 
     liveMenu = menuBar()->addMenu(tr("Live"));
     liveMenu->addAction(runAct);
@@ -4224,7 +4329,7 @@ void MainWindow::createStatusBar()
 {
     std::cout << "[GUI] - creating status bar" << std::endl;
     versionLabel = new QLabel(this);
-    versionLabel->setText("Sonic Pi");
+    versionLabel->setText("Sonic Pi for Agents");
     statusBar()->showMessage(tr("Ready..."));
     statusBar()->addPermanentWidget(versionLabel);
 }
@@ -4752,7 +4857,7 @@ void MainWindow::updateVersionNumber(QString v, int v_num, QString latest_v, int
     latest_version_num = latest_v_num;
 
     // update status bar
-    versionLabel->setText(QString("Sonic Pi " + v + " on " + platform + " "));
+    versionLabel->setText(QString("Sonic Pi for Agents " + v + " (based on Sonic Pi " + upstream_version + ") on " + platform + " "));
 
     // update preferences
     QString last_update_check = tr("Last checked %1").arg(last_checked.toString());

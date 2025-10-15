@@ -78,6 +78,7 @@ class SonicPiLexer;
 class SonicPiSettings;
 class SonicPiContext;
 class SonicPiMetro;
+class SonicPiProject;
 
 #ifdef WITH_WEBENGINE
 class PhxWidget;
@@ -206,6 +207,8 @@ private slots:
     QString currentTabLabel();
     bool loadFile();
     bool saveAs();
+    void newProject();
+    void openProject();
     void about();
     void scope();
     void toggleScope();
@@ -333,6 +336,8 @@ private slots:
     void focusTimeWarpScrubber();
     void shortcutModeMenuChanged(int modeID);
 
+    void onBufferChangedExternally(int bufferId, const QString& newContent);
+
 private:
     QKeySequence resolveShortcut(QString keySequence);
     void resetShortcuts();
@@ -399,8 +404,10 @@ private:
     void addUniversalCopyShortcuts(QTextEdit* te);
     void updateTranslatedUIText();
 
-    QMenu *shortcutMenu, *liveMenu, *codeMenu, *audioMenu, *displayMenu, *viewMenu, *focusMenu, *tabMenu, *ioMenu, *ioMidiInMenu, *ioMidiOutMenu, *ioMidiOutChannelMenu, *localIpAddressesMenu, *themeMenu, *scopeKindVisibilityMenu, *languageMenu;
+    QMenu *shortcutMenu, *projectMenu, *liveMenu, *codeMenu, *audioMenu, *displayMenu, *viewMenu, *focusMenu, *tabMenu, *ioMenu, *ioMidiInMenu, *ioMidiOutMenu, *ioMidiOutChannelMenu, *localIpAddressesMenu, *themeMenu, *scopeKindVisibilityMenu, *languageMenu;
     QMap<QString, QKeySequence> shortcutMap;
+
+    QAction *newProjectAct, *openProjectAct;
 
     QSettings* gui_settings;
     SonicPiSettings* piSettings;
@@ -487,6 +494,7 @@ private:
     QString defaultTextBrowserStyle;
 
     QString version;
+    QString upstream_version;
     int version_num;
     QString latest_version;
     int latest_version_num;
@@ -504,4 +512,7 @@ private:
     std::shared_ptr<QRect> m_appWindowSizeRect;
 
     QSet<QString> cuePaths;
+
+    // Project management
+    SonicPiProject* currentProject;
 };

@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 
     qRegisterMetaType<SonicPiLog::MultiMessage>("SonicPiLog::MultiMessage");
 
-    app.setApplicationName(QObject::tr("Sonic Pi"));
+    app.setApplicationName(QObject::tr("Sonic Pi for Agents"));
 
     app.setStyle("fusion");
 

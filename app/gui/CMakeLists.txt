@@ -6,10 +6,10 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "12")
 endif()
 
-project("Sonic Pi"
+project("Sonic Pi for Agents"
   LANGUAGES CXX C
-  DESCRIPTION "A code-based music creation and performance tool"
-  VERSION 5.0.0
+  DESCRIPTION "A code-based music creation and performance tool for human-agent collaboration"
+  VERSION 0.1.0
   HOMEPAGE_URL "https://sonic-pi.net"
 )
 
@@ -47,10 +47,10 @@ set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Automoc)
 find_package(Qt6)
 
 if(Qt6_FOUND AND WITH_QT_GUI_WEBENGINE)
-  find_package(Qt6 COMPONENTS Core Widgets Gui Concurrent Network OpenGLWidgets PrintSupport Xml Svg LinguistTools WebEngineWidgets REQUIRED)
+  find_package(Qt6 COMPONENTS Core Widgets Gui Concurrent Network OpenGLWidgets PrintSupport Xml Svg LinguistTools DBus WebEngineWidgets REQUIRED)
   add_compile_definitions(WITH_WEBENGINE)
 elseif(Qt6_FOUND)
-  find_package(Qt6 COMPONENTS Core Widgets Gui Concurrent Network OpenGLWidgets PrintSupport Xml Svg LinguistTools REQUIRED)
+  find_package(Qt6 COMPONENTS Core Widgets Gui Concurrent Network OpenGLWidgets PrintSupport Xml Svg LinguistTools DBus REQUIRED)
 endif()
 
 find_package(Threads REQUIRED)
@@ -70,7 +70,7 @@ endif()
 
 
 set(APP_NAME sonic-pi)
-set(MACOS_APP_NAME "Sonic Pi")
+set(MACOS_APP_NAME "Sonic Pi for Agents")
 
 set(NEW_API_SOURCES
     ${QTAPP_ROOT}/qt_api_client.cpp
@@ -93,6 +93,8 @@ set(QT_SOURCES
     ${QTAPP_ROOT}/widgets/bpmscrubwidget.h
     ${QTAPP_ROOT}/mainwindow.cpp
     ${QTAPP_ROOT}/mainwindow.h
+    ${QTAPP_ROOT}/sonicpiproject.cpp
+    ${QTAPP_ROOT}/sonicpiproject.h
     ${QTAPP_ROOT}/model/sonicpitheme.cpp
     ${QTAPP_ROOT}/model/sonicpitheme.h
     ${QTAPP_ROOT}/widgets/infowidget.h
@@ -285,6 +287,12 @@ if (APPLE)
     POST_BUILD
     COMMAND plutil -replace NSMicrophoneUsageDescription -string "Sonic Pi needs microphone access for its live audio input features." ${MACOS_APP_NAME}.app/Contents/Info.plist
   )
+  add_custom_command(
+    TARGET ${APP_NAME}
+    POST_BUILD
+    COMMAND codesign --force --deep --sign - ${MACOS_APP_NAME}.app
+    COMMENT "Ad-hoc code signing ${MACOS_APP_NAME}.app for local development"
+  )
 endif()
 
 message(STATUS "App Root: ${APP_ROOT}")
@@ -319,7 +327,8 @@ target_link_libraries(${APP_NAME}
     Qt::OpenGL
     Qt::Concurrent
     Qt::Network
-    Qt::OpenGLWidgets)
+    Qt::OpenGLWidgets
+    Qt::DBus)
 
 
 if(WITH_QT_GUI_WEBENGINE)
