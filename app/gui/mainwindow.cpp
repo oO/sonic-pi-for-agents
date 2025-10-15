@@ -167,6 +167,14 @@ MainWindow::MainWindow(QApplication& app, QSplashScreen* splash)
     if (boot_success == APIBootResult::Successful)
     {
         std::cout << "[GUI] - API Boot successful" << std::endl;
+
+        // Open livecode log file for writing
+        auto livecode_log_path = QString::fromStdString(m_spAPI->GetPath(SonicPiPath::LivecodeLogPath));
+        livecode_log.open(livecode_log_path.toStdString(), std::ios::out | std::ios::app);
+        if (livecode_log.is_open())
+        {
+            std::cout << "[GUI] - Livecode log file opened: " << livecode_log_path.toStdString() << std::endl;
+        }
     }
     else if (boot_success == APIBootResult::ScsynthBootError)
     {
@@ -4617,6 +4625,12 @@ void MainWindow::onExitCleanup()
         // Do this before closing the client, so the io redirect happens after
         std::cout << "[GUI] - exiting. Cheerio :-)" << std::endl;
 
+        // Close livecode log file
+        if (livecode_log.is_open())
+        {
+            livecode_log.close();
+        }
+
         // Shuts down the client/server connection
         m_spAPI->Shutdown();
     }
@@ -5219,6 +5233,11 @@ SonicPiLog* MainWindow::GetIncomingPane() const
 SonicPiTheme* MainWindow::GetTheme() const
 {
     return theme;
+}
+
+std::ofstream& MainWindow::GetLivecodeLog()
+{
+    return livecode_log;
 }
 
 void MainWindow::movePrefsWidget()

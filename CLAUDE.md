@@ -14,7 +14,11 @@ cd app
 ./mac-build-all.sh              # Full build: prebuild + config + cmake
 ./mac-build-gui.sh              # GUI only
 ./mac-clean.sh                  # Clean build artifacts
-./build/gui/Sonic\ Pi.app/Contents/MacOS/Sonic\ Pi  # Run built app
+
+# Run the built app:
+open ./build/gui/Sonic\ Pi\ for\ Agents.app
+# Or directly:
+./build/gui/Sonic\ Pi\ for\ Agents.app/Contents/MacOS/Sonic\ Pi\ for\ Agents
 ```
 
 ### Linux
@@ -34,9 +38,10 @@ win-clean.bat
 ```
 
 ### Dependencies
-- **macOS**: Xcode (12.1+), Homebrew, Qt6 (6.2+), CMake (3.18+), Elixir (1.13+), pkg-config
-  - Install via: `brew install qt cmake elixir pkg-config`
-- **All platforms**: See platform-specific BUILD-*.md files for detailed setup
+- **macOS**: Xcode (12.1+), Homebrew, Qt6 (6.2+), CMake (3.18+), Elixir (1.13+), pkg-config, vcpkg
+  - Install via: `brew install qt@6 cmake elixir pkg-config`
+  - vcpkg is automatically cloned and configured by `mac-pre-vcpkg.sh` (run by `mac-build-all.sh`)
+- **All platforms**: See platform-specific BUILD-*.md files in `sonic-pi/` for detailed setup
 
 ## Testing
 

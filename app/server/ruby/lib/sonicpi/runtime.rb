@@ -318,18 +318,8 @@ module SonicPi
     end
 
     def __server_version
-      return Version.new(0) if @settings.get(:no_update_checking)
-
-      # Only check for updates at most once every 2 weeks
-      last_update = @settings.get(:last_update_check_time).to_i
-      if  (last_update > 0) &&
-          (Time.at(last_update) < Time.now)
-        two_weeks_in_seconds = 60 * 60 * 24 * 14
-        ts_2_weeks_later = Time.at(last_update + two_weeks_in_seconds)
-        return __local_cached_server_version if Time.now < ts_2_weeks_later
-      end
-
-      __check_for_server_version_now
+      # Sonic Pi for Agents is a fork - disable upstream version checking
+      return @version
     end
 
     def __local_cached_server_version
@@ -1433,7 +1423,7 @@ module SonicPi
 
       # Temporarily fix beta version:
       # @version = Version.new(5, 0, 0, "Dev #{gh_short}")
-      @version = Version.new(4, 6, 0)
+      @version = Version.new(0, 2, 0)
 
       @server_version = __server_version
       @life_hooks = LifeCycleHooks.new
@@ -1559,7 +1549,9 @@ module SonicPi
 
       @system_state.set 0, 0, ThreadId.new(-2), 0, 0, 60, :sched_ahead_time, default_sched_ahead_time
 
-      __info "Welcome to Sonic Pi #{version}", 1
+      __info "Welcome to Sonic Pi for Agents #{version}", 1
+
+      __info "Based on Sonic Pi v4.6.0"
 
       __info "Running on Ruby v#{RUBY_VERSION}"
 

@@ -1,107 +1,49 @@
-                                           ╘
-                                    ─       ╛▒╛
-                                     ▐╫       ▄█├
-                              ─╟╛      █▄      ╪▓▀
-                    ╓┤┤┤┤┤┤┤┤┤  ╩▌      ██      ▀▓▌
-                     ▐▒   ╬▒     ╟▓╘    ─▓█      ▓▓├
-                     ▒╫   ▒╪      ▓█     ▓▓─     ▓▓▄
-                    ╒▒─  │▒       ▓█     ▓▓     ─▓▓─
-                    ╬▒   ▄▒ ╒    ╪▓═    ╬▓╬     ▌▓▄
-                    ╥╒   ╦╥     ╕█╒    ╙▓▐     ▄▓╫
-                               ▐╩     ▒▒      ▀▀
-                                    ╒╪      ▐▄
+# Sonic Pi for Agents
 
-                 _____             __        ____  __
-                / ___/____  ____  /_/____   / __ \/_/
-                \__ \/ __ \/ __ \/ / ___/  / /_/ / /
-               ___/ / /_/ / / / / / /__   / ____/ /
-              /____/\____/_/ /_/_/\___/  /_/   /_/
+An AI-optimized fork of [Sonic Pi](https://sonic-pi.net) designed for seamless interaction with AI coding agents.
+
+Designed with ❤️ by oO. Coded with ✨ by Claude Code
 
 
-## Code. Music. Live.
+## What is this?
 
-Sonic Pi is a *new kind of musical instrument*. Instead of strumming
-strings or whacking things with sticks - you write code - **live**.
+**Sonic Pi for Agents** is a live coding music synthesizer optimized for AI agents (like Claude Code, GitHub Copilot, Cursor, etc.) to compose and modify music code effectively.
 
-Sonic Pi has been designed with the aim to find a harmonious balance
-between three core principles:
+Based on **Sonic Pi v4.5.x** with full DSL compatibility.
 
-* **Simple** enough for the 10 year old within you
-* **Joyful** enough for you to lose yourself through play
-* **Powerful** enough for your own expressions
+## Quick Start
 
-Sonic Pi is a complete open source programming environment originally
-designed to explore and *teach programming concepts* within schools through
-the process of creating *new sounds*.
+```bash
+cd app
+./mac-build-all.sh              # macOS
+./linux-build-all.sh            # Linux
+win-build-all.bat               # Windows
 
-In addition to being an engaging education resource it has evolved into
-an *extremely powerful* and performance-ready *live coding instrument* suitable
-for professional artists and DJs.
+# Run
+open ./build/gui/Sonic\ Pi\ for\ Agents.app  # macOS
+```
 
-Whilst Education is a core focus it now sits at the intersection
-between three core domains:
+## Documentation
 
-* **Art** - providing the means to express yourself and ask new questions of music and notation
-* **Technology** - exploring questions related to liveness, time and concurrency in programming languages
-* **Education**  - demonstrating that open play rather than rigid structures increases motivation and engagement in the classroom
+- **[sonic-pi/README.md](sonic-pi/README.md)** - Full Sonic Pi documentation
+- **[CLAUDE.md](CLAUDE.md)** - Architecture and development guide for Claude Code
+- **[sonic-pi/BUILD-MAC.md](sonic-pi/BUILD-MAC.md)** - macOS build instructions
+- **[sonic-pi/BUILD-LINUX.md](sonic-pi/BUILD-LINUX.md)** - Linux build instructions
+- **[sonic-pi/BUILD-WINDOWS.md](sonic-pi/BUILD-WINDOWS.md)** - Windows build instructions
 
-Again, finding a balance working to the best benefits of all these
-domains is the objective.
+## Key Differences
 
+- Application name: "Sonic Pi for Agents"
+- Version: v0.2.0 (independent from upstream)
+- Agent-optimized error messages and logging
+- All original Sonic Pi docs preserved in `sonic-pi/`
 
-* Info & Latest Releases: https://sonic-pi.net
-* Source: https://github.com/sonic-pi-net/sonic-pi
-* Computing Education Resources for Schools: https://www.raspberrypi.org/learning/sonic-pi-lessons/
-* Music Education Toolkit for Schools: https://sonic-pi.mehackit.org
+## License
 
-## Contributors
+Same as Sonic Pi. See [sonic-pi/LICENSE.md](sonic-pi/LICENSE.md).
 
-Sonic Pi has been developed with support from many individuals and organisations. Please see the [CONTRIBUTORS.md](https://github.com/samaaron/sonic-pi/blob/main/CONTRIBUTORS.md) file for a more complete list.
+## Credits
 
-## Translations
-
-Sonic Pi's application and built in tutorial have been translated into several languages thanks to the awesome work of several [volunteer translators](CONTRIBUTORS.md#translation):
-
-Status                                                                                                                                                       | Language            | Application        | Tutorial
------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------ | :----------------: | :----------------:
-[![Translation Status of Sonic Pi: da](https://hosted.weblate.org/widgets/sonic-pi/da/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Danish              | :white_check_mark: | :red_circle:
-[![Translation Status of Sonic Pi: nl](https://hosted.weblate.org/widgets/sonic-pi/nl/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Dutch               | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: fi](https://hosted.weblate.org/widgets/sonic-pi/fi/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Finnish             | :white_check_mark: | :red_circle:
-[![Translation Status of Sonic Pi: fr](https://hosted.weblate.org/widgets/sonic-pi/fr/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | French              | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: de](https://hosted.weblate.org/widgets/sonic-pi/de/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | German              | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: hu](https://hosted.weblate.org/widgets/sonic-pi/hu/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Hungarian           | :white_check_mark: | :red_circle:
-[![Translation Status of Sonic Pi: is](https://hosted.weblate.org/widgets/sonic-pi/is/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Icelandic           | :white_check_mark: | :red_circle:
-[![Translation Status of Sonic Pi: it](https://hosted.weblate.org/widgets/sonic-pi/it/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Italian             | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: ja](https://hosted.weblate.org/widgets/sonic-pi/ja/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Japanese            | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: nb](https://hosted.weblate.org/widgets/sonic-pi/nb/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Norwegian Bokmål    | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: pl](https://hosted.weblate.org/widgets/sonic-pi/pl/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Polish              | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: pt](https://hosted.weblate.org/widgets/sonic-pi/pt/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Portuguese          | :red_circle:       | :white_check_mark:
-[![Translation Status of Sonic Pi: ro](https://hosted.weblate.org/widgets/sonic-pi/ro/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Romanian            | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: ru](https://hosted.weblate.org/widgets/sonic-pi/ru/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Russian             | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: zh_Hans](https://hosted.weblate.org/widgets/sonic-pi/zh_Hans/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/) | Simplified Chinese  | :white_check_mark: | :red_circle:
-[![Translation Status of Sonic Pi: es](https://hosted.weblate.org/widgets/sonic-pi/es/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | Spanish             | :white_check_mark: | :white_check_mark:
-[![Translation Status of Sonic Pi: si](https://hosted.weblate.org/widgets/sonic-pi/si/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)           | sinhalese           | :white_check_mark: | :red_circle:
-[![Translation Status of Sonic Pi: tr_TR](https://hosted.weblate.org/widgets/sonic-pi/tr_TR/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/) | Turkish             | :white_check_mark: | :red_circle:
-
-Would you like to contribute a translation too? If so, please take a look at our [translation docs](https://github.com/samaaron/sonic-pi/blob/main/TRANSLATION.md) to get started.
-
-## Information for developers
-
-Sonic Pi is under active development, and welcomes new contributors:
-
-* [Contributing](CONTRIBUTING.md)
-* [Change log](CHANGELOG.md)
-* [Community](COMMUNITY.md)
-* [Contributors](CONTRIBUTORS.md)
-* Building
-  - [Linux](BUILD-LINUX.md)
-  - [Mac](BUILD-MAC.md)
-  - [Windows](BUILD-WINDOWS.md)
-* [License](LICENSE.md)
-* [Testing](TESTING.md)
-* [Translation](TRANSLATION.md)
-
-[![Weblate](https://hosted.weblate.org/widgets/sonic-pi/-/svg-badge.svg)](https://hosted.weblate.org/engage/sonic-pi/)
-<br/>
-[![Travis CI](https://travis-ci.org/samaaron/sonic-pi.svg?branch=main)](https://travis-ci.org/samaaron/sonic-pi)
-<br/> 
+- **Fork**: Olivier "oO" Ozoux (olivier@ozoux.com)
+- **Original Sonic Pi**: Sam Aaron and [contributors](sonic-pi/CONTRIBUTORS.md)
+- **Upstream**: https://github.com/sonic-pi-net/sonic-pi

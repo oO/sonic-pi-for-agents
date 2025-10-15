@@ -30,6 +30,18 @@ void QtAPIClient::ReportGui(const MessageInfo& info)
         mm.job_id = info.jobId;
         mm.thread_name = info.threadName;
         mm.runtime = info.runtime;
+
+        // Write to livecode.log
+        std::ofstream& livecode_log = m_pMainWindow->GetLivecodeLog();
+        if (livecode_log.is_open())
+        {
+            for (auto& msg : info.multi)
+            {
+                livecode_log << msg.text;
+            }
+            livecode_log.flush();
+        }
+
         for (auto& msg : info.multi)
         {
             SonicPiLog::Message message;
@@ -53,7 +65,16 @@ void QtAPIClient::ReportGui(const MessageInfo& info)
             pOutput->setTextBgFgColors(pTheme->color("LogInfoBackground"), pTheme->color("LogInfoForeground"));
         }
 
-        pOutput->appendPlainText(QString::fromStdString("=> " + info.text + "\n"));
+        QString logText = QString::fromStdString("=> " + info.text + "\n");
+        pOutput->appendPlainText(logText);
+
+        // Write to livecode.log
+        std::ofstream& livecode_log = m_pMainWindow->GetLivecodeLog();
+        if (livecode_log.is_open())
+        {
+            livecode_log << logText.toStdString();
+            livecode_log.flush();
+        }
 
         pOutput->setTextColor(pTheme->color("LogForeground"));
         pOutput->setTextBackgroundColor(pTheme->color("LogBackground"));

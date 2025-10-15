@@ -74,6 +74,7 @@ enum class SonicPiPath
     TauLogPath,          // Log file for Tau IO Server output
     SCSynthLogPath,      // Log file for SuperCollider scsynth's output
     GUILogPath,          // Log file for GUI
+    LivecodeLogPath,     // Log file for livecode output (outputPane messages)
     ClearLogsPath,       // Path to Ruby script for clearing log dir
     ConfigPath,          // Base config folder
     AudioSettingsConfigPath  // Path to toml config file for audio settings

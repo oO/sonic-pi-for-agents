@@ -107,6 +107,7 @@ public:
     SonicPiLog* GetOutputPane() const;
     SonicPiLog* GetIncomingPane() const;
     SonicPiTheme* GetTheme() const;
+    std::ofstream& GetLivecodeLog();
 
     void addCuePath(QString path, QString val);
     void setLineMarkerinCurrentWorkspace(int num);
@@ -484,6 +485,7 @@ private:
     QHash<QString, help_entry> helpKeywords;
     std::streambuf* coutbuf;
     std::ofstream stdlog;
+    std::ofstream livecode_log;
 
     ScintillaAPI* autocomplete;
 #ifdef QT_OLD_API

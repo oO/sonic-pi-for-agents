@@ -777,6 +777,7 @@ bool SonicPiAPI::InitializePaths(const fs::path& root)
     m_paths[SonicPiPath::TauLogPath]          = m_paths[SonicPiPath::LogPath] / "tau.log";
     m_paths[SonicPiPath::SCSynthLogPath]      = m_paths[SonicPiPath::LogPath] / "scsynth.log";
     m_paths[SonicPiPath::GUILogPath]          = m_paths[SonicPiPath::LogPath] / "gui.log";
+    m_paths[SonicPiPath::LivecodeLogPath]     = m_paths[SonicPiPath::LogPath] / "livecode.log";
 
     // Set built-in samples path
     m_paths[SonicPiPath::SamplePath] = m_paths[SonicPiPath::RootPath] / "etc/samples/";
@@ -893,7 +894,8 @@ std::string SonicPiAPI::GetLogs()
         GetPath(SonicPiPath::BootDaemonLogPath),
         GetPath(SonicPiPath::TauLogPath),
         GetPath(SonicPiPath::SCSynthLogPath),
-        GetPath(SonicPiPath::GUILogPath) };
+        GetPath(SonicPiPath::GUILogPath),
+        GetPath(SonicPiPath::LivecodeLogPath) };
 
     std::ostringstream str;
     for (auto& log : logs)
