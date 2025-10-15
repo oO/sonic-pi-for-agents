@@ -9,6 +9,15 @@ For the original Sonic Pi changelog, see [sonic-pi/CHANGELOG.md](sonic-pi/CHANGE
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-10-15
+
+### Added
+- Added DEV-SPEC.md - comprehensive development specification for agent-first architecture
+
+### Changed
+- Updated startup.html to display "Sonic Pi for Agents" branding
+- Disabled splash screen on launch for faster startup
+
 ## [0.2.0] - 2025-10-15
 
 ### Added
@@ -34,5 +43,6 @@ For the original Sonic Pi changelog, see [sonic-pi/CHANGELOG.md](sonic-pi/CHANGE
 - Updated build paths to reflect new application name
 
 [Unreleased]: https://github.com/yourusername/sonic-pi-for-agents/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/yourusername/sonic-pi-for-agents/compare/v0.1.0...v0.2.0
+[0.2.0]: https://github.com/yourusername/sonic-pi-for-agents/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/yourusername/sonic-pi-for-agents/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/yourusername/sonic-pi-for-agents/releases/tag/v0.1.0

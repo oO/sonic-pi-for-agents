@@ -80,13 +80,13 @@ int main(int argc, char* argv[])
 
     app.setStyle("fusion");
 
-    QPixmap pixmap(":/images/splash@2x.png");
+    // QPixmap pixmap(":/images/splash@2x.png");
 
-    QSplashScreen* splash = new QSplashScreen(pixmap);
-    splash->show();
-    app.processEvents();
+    // QSplashScreen* splash = new QSplashScreen(pixmap);
+    // splash->show();
+    // app.processEvents();
 
-    MainWindow mainWin(app, splash);
+    MainWindow mainWin(app, nullptr);
 
     return app.exec();
 }
