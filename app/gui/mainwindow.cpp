@@ -136,6 +136,13 @@ MainWindow::MainWindow(QApplication& app, QSplashScreen* splash)
     restoreDocPane = false;
     focusMode = false;
     currentProject = nullptr;
+
+    // Initialize auto-save timers to nullptr
+    for (int i = 0; i < workspace_max; i++)
+    {
+        m_autoSaveTimers[i] = nullptr;
+    }
+
     version = "0.1.0";
     upstream_version = "4.6.0";
     latest_version = "";
@@ -269,8 +276,10 @@ MainWindow::MainWindow(QApplication& app, QSplashScreen* splash)
         updateFullScreenMode();
 
         updateColourTheme();
-        std::cout << "[GUI] - load workspaces" << std::endl;
-        loadWorkspaces();
+        std::cout << "[GUI] - scheduling default project load" << std::endl;
+        // Defer project loading until after constructor completes and event loop starts
+        // This prevents issues with partially-constructed parent objects
+        QTimer::singleShot(0, this, &MainWindow::loadDefaultProject);
         std::cout << "[GUI] - load request Version" << std::endl;
         requestVersion();
         changeSystemPreAmp(piSettings->main_volume, 1);
@@ -558,6 +567,21 @@ void MainWindow::setupWindowStructure()
         editorTabWidget->addTab(editor, w);
 
         connect(workspace, SIGNAL(cursorPositionChanged(int, int)), this, SLOT(updateContext(int, int)));
+
+        // Set up auto-save timer for this workspace
+        m_autoSaveTimers[ws] = new QTimer(this);
+        m_autoSaveTimers[ws]->setSingleShot(true);
+        m_autoSaveTimers[ws]->setInterval(300); // 300ms debounce
+
+        // Connect textChanged signal to trigger auto-save
+        connect(workspace, &QsciScintilla::textChanged, this, [this, ws]() {
+            onWorkspaceTextChanged(ws);
+        });
+
+        // Connect timer timeout to actual save
+        connect(m_autoSaveTimers[ws], &QTimer::timeout, this, [this, ws]() {
+            onAutoSaveTimeout(ws);
+        });
     }
 
     connect(signalMapper, SIGNAL(mappedInt(int)), this, SLOT(changeTab(int)));
@@ -1696,6 +1720,82 @@ void MainWindow::saveWorkspaces()
     }
 }
 
+void MainWindow::loadDefaultProject()
+{
+    std::cout << "[GUI] - loadDefaultProject() ENTRY" << std::endl;
+
+    // Get default project path: ~/.sonic-pi/default-project/
+    std::cout << "[GUI] - getting sonicPiHomePath..." << std::endl;
+    QString sonicPiPath = sonicPiHomePath();
+    std::cout << "[GUI] - sonicPiPath = " << sonicPiPath.toStdString() << std::endl;
+
+    std::cout << "[GUI] - constructing defaultProjectPath..." << std::endl;
+    QString defaultProjectPath = QDir(sonicPiPath).filePath("default-project");
+    std::cout << "[GUI] - defaultProjectPath = " << defaultProjectPath.toStdString() << std::endl;
+
+    // Try to load existing project
+    std::cout << "[GUI] - calling SonicPiProject::load()..." << std::endl;
+    SonicPiProject* project = SonicPiProject::load(defaultProjectPath, this);
+    std::cout << "[GUI] - SonicPiProject::load() returned: " << (project ? "valid pointer" : "nullptr") << std::endl;
+
+    // If load failed, create new project
+    if (!project)
+    {
+        std::cout << "[GUI] - Default project not found, calling SonicPiProject::create() at: "
+                  << defaultProjectPath.toStdString() << std::endl;
+        project = SonicPiProject::create(defaultProjectPath, this);
+        std::cout << "[GUI] - SonicPiProject::create() returned: " << (project ? "valid pointer" : "nullptr") << std::endl;
+    }
+
+    if (!project)
+    {
+        std::cerr << "[GUI] - Failed to create/load default project, falling back to legacy workspace loading" << std::endl;
+        loadWorkspaces();
+        return;
+    }
+
+    std::cout << "[GUI] - checking currentProject..." << std::endl;
+    // Close existing project if any
+    if (currentProject)
+    {
+        std::cout << "[GUI] - deleting existing currentProject..." << std::endl;
+        delete currentProject;
+        std::cout << "[GUI] - delete completed" << std::endl;
+    }
+
+    std::cout << "[GUI] - assigning project to currentProject..." << std::endl;
+    currentProject = project;
+    std::cout << "[GUI] - currentProject assigned" << std::endl;
+
+    // Connect external change signal
+    std::cout << "[GUI] - connecting bufferChangedExternally signal..." << std::endl;
+    connect(currentProject, &SonicPiProject::bufferChangedExternally,
+            this, &MainWindow::onBufferChangedExternally);
+    std::cout << "[GUI] - signal connected" << std::endl;
+
+    // Load all buffers from project files
+    std::cout << "[GUI] - loading buffers into workspaces..." << std::endl;
+    for (int i = 0; i < 10; i++)
+    {
+        std::cout << "[GUI] - processing buffer " << i << "..." << std::endl;
+
+        // Safety check: ensure workspace is initialized
+        if (!workspaces[i])
+        {
+            std::cerr << "[GUI] - ERROR: workspace " << i << " is null!" << std::endl;
+            continue;
+        }
+
+        std::cout << "[GUI] - reading buffer " << i << " from project..." << std::endl;
+        QString content = currentProject->readBuffer(i);
+        std::cout << "[GUI] - read " << content.length() << " chars, setting text..." << std::endl;
+        workspaces[i]->setText(content);
+        std::cout << "[GUI] - buffer " << i << " setText() completed" << std::endl;
+    }
+
+    std::cout << "[GUI] - Default project loaded successfully - EXIT" << std::endl;
+}
+
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     writeSettings();
@@ -1833,9 +1933,44 @@ void MainWindow::onBufferChangedExternally(int bufferId, const QString& newConte
 
     std::cout << "[GUI] - External change detected for buffer " << bufferId << std::endl;
 
+    // Stop auto-save timer to avoid conflict (only if timer exists and is initialized)
+    if (m_autoSaveTimers[bufferId] && m_autoSaveTimers[bufferId]->isActive())
+    {
+        m_autoSaveTimers[bufferId]->stop();
+    }
+
     // TODO: Apply smart diff instead of full replacement
     // For now, just replace the content
     workspaces[bufferId]->setText(newContent);
+}
+
+void MainWindow::onWorkspaceTextChanged(int bufferId)
+{
+    // Only auto-save if we have an active project
+    if (!currentProject)
+        return;
+
+    // Restart debounce timer
+    m_autoSaveTimers[bufferId]->start();
+}
+
+void MainWindow::onAutoSaveTimeout(int bufferId)
+{
+    // Save the current buffer content to disk
+    if (!currentProject)
+        return;
+
+    QString content = workspaces[bufferId]->text();
+    bool success = currentProject->writeBuffer(bufferId, content);
+
+    if (success)
+    {
+        std::cout << "[GUI] - Auto-saved buffer " << bufferId << std::endl;
+    }
+    else
+    {
+        std::cerr << "[GUI] - Failed to auto-save buffer " << bufferId << std::endl;
+    }
 }
 
 void MainWindow::resetErrorPane()

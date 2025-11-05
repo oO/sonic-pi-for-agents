@@ -9,6 +9,17 @@ For the original Sonic Pi changelog, see [sonic-pi/CHANGELOG.md](sonic-pi/CHANGE
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-05
+
+### Added
+- Auto-save functionality with 300ms debounce timers for each workspace buffer
+- Deferred default project loading via QTimer::singleShot to fix constructor race conditions
+- External change detection that stops auto-save to avoid conflicts
+- Fallback to legacy workspace loading if project creation fails
+
+### Changed
+- Replaced immediate loadWorkspaces() call with deferred loadDefaultProject() in constructor
+
 ## [0.1.1] - 2025-10-15
 
 ### Added

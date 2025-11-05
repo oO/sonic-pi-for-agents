@@ -338,6 +338,8 @@ private slots:
     void shortcutModeMenuChanged(int modeID);
 
     void onBufferChangedExternally(int bufferId, const QString& newContent);
+    void onWorkspaceTextChanged(int bufferId);
+    void onAutoSaveTimeout(int bufferId);
 
 private:
     QKeySequence resolveShortcut(QString keySequence);
@@ -375,6 +377,7 @@ private:
     bool saveFile(const QString& fileName, SonicPiScintilla* text);
     void loadWorkspaces();
     void saveWorkspaces();
+    void loadDefaultProject();
     void updateShortcuts();
     void updateShortcut(const QString& id, QAction* action, const QString& desc);
     std::string number_name(int);
@@ -517,4 +520,7 @@ private:
 
     // Project management
     SonicPiProject* currentProject;
+
+    // Auto-save timers (one per workspace)
+    QTimer* m_autoSaveTimers[workspace_max];
 };
