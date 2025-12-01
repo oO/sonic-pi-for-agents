@@ -9,6 +9,12 @@ For the original Sonic Pi changelog, see [sonic-pi/CHANGELOG.md](sonic-pi/CHANGE
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-12-01
+
+### Fixed
+- Removed --yjit Ruby flag that caused startup crash on Ruby 2.6 (YJIT requires Ruby 3.1+)
+- Added null check in splashClose() to prevent crash when splash screen is disabled
+
 ## [0.3.0] - 2025-11-05
 
 ### Added

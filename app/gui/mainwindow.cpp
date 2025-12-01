@@ -1377,7 +1377,9 @@ QString MainWindow::rootPath()
 
 void MainWindow::splashClose()
 {
-    splash->finish(this);
+    if (splash) {
+        splash->finish(this);
+    }
 }
 
 void MainWindow::showWindow()

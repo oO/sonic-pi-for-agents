@@ -897,7 +897,7 @@ module SonicPi
     class SpiderBooter < ProcessBooter
       def initialize(ports, token)
         args = [
-          "--enable-frozen-string-literal", "-E", "utf-8", "--yjit",
+          "--enable-frozen-string-literal", "-E", "utf-8",
           Paths.spider_server_path,
           "-u",
           ports["spider-listen-to-gui"],
