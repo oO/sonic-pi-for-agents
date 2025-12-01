@@ -178,6 +178,26 @@ Sonic Pi synths are defined as SuperCollider SynthDefs and compiled to binary `.
 - Time synchronization via logical time system (not wall clock)
 - Resource management via allocators (buses, buffers, nodes)
 
+## Agent-First Features (v0.3.0+)
+
+This fork adds features specifically for AI agent collaboration:
+
+### File-Backed Buffers
+- Buffers auto-save to `~/.sonic-pi/default-project/buffer.N.spi`
+- External changes are detected and reloaded automatically (file watching)
+- 300ms debounce on saves to prevent thrashing
+
+### Default Project Loading
+- Project folder created on first launch
+- Files are the source of truth, GUI is a view
+- Enables agents to write code to files and have it appear in the editor
+
+### Writing Music as an Agent
+```bash
+# Write to a buffer file - GUI will auto-reload
+echo 'play :c4' > ~/.sonic-pi/default-project/buffer.0.spi
+```
+
 ## Configuration
 
 ### User Config Files
