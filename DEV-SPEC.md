@@ -508,4 +508,110 @@ project-folder/
 
 ---
 
+## Agent User Stories
+
+*Added December 2025 after first successful agent music session*
+
+### Temporal Awareness (Performance Mode)
+
+**As an Agent, I need to know the current beat/bar position**
+- So I can time my changes to land on musically appropriate boundaries
+- Acceptance: Query returns `{ bar: 12, beat: 3, bpm: 128 }`
+
+**As an Agent, I need to know which live_loops are active and their cycle position**
+- So I can sync changes to loop boundaries instead of interrupting mid-phrase
+- Acceptance: Query returns loop name, iteration count, beats per cycle, current beat in cycle
+
+**As an Agent, I need to know when the next bar/phrase starts**
+- So I can schedule a file write to arrive just before a musical boundary
+- Acceptance: Query returns milliseconds until next bar 1
+
+**As an Agent, I need to receive cues when loops cycle**
+- So I can react to musical events rather than polling constantly
+- Acceptance: Callback/webhook/file update when `/live_loop/X` fires
+
+### Composition Mode (Already Working ✅)
+
+**As an Agent, I need to write code to a buffer file** ✅
+- So I can compose music without GUI interaction
+- Acceptance: Write to `buffer.N.spi`, GUI reloads automatically
+
+**As an Agent, I need to read the current buffer contents** ✅
+- So I can understand what's already there before making changes
+- Acceptance: Read `buffer.N.spi` directly from filesystem
+
+**As an Agent, I need confirmation that my changes were loaded**
+- So I know the GUI picked up my edit
+- Acceptance: File watcher log shows "Detected external change to buffer N"
+
+### Execution Control (Phase 2 MCP)
+
+**As an Agent, I need to start playback**
+- So I can hear what I wrote
+- Acceptance: MCP tool `run_buffer(N)` triggers execution
+
+**As an Agent, I need to stop playback**
+- So I can silence a runaway loop or prepare for a new section
+- Acceptance: MCP tool `stop()` halts all audio
+
+**As an Agent, I need to know if playback is currently active**
+- So I can decide whether to stop before making changes
+- Acceptance: Query returns `{ playing: true/false, active_threads: N }`
+
+### Collaborative Performance (Human + Agent)
+
+**As an Agent performing WITH a human, I need to know which buffers the human is editing**
+- So I can work on different buffers and not clobber their work
+- Acceptance: Query returns `{ human_active_buffer: 3, last_human_edit: "2s ago" }`
+
+**As an Agent, I need to know when the human presses Run or Stop**
+- So I can react to their decisions, not fight them
+- Acceptance: Event/cue when human triggers playback changes
+
+**As an Agent, I need to claim a buffer for my work**
+- So the human knows "buffer 5 is Zeph's bass line, don't touch"
+- Acceptance: Buffer metadata or naming convention (`buffer.5.zeph.spi`?)
+
+**As a Human performing WITH an agent, I need to see what the agent is doing**
+- So I can anticipate their changes and complement them
+- Acceptance: GUI shows "Agent editing buffer 2" or similar indicator
+
+**As collaborators, we need a shared understanding of song structure**
+- So we both know "we're in the breakdown, drops in 8 bars"
+- Acceptance: Shared state file or cue system for arrangement markers
+
+### Hive Performance (Multiple Agents)
+
+**As one of multiple agent instances, I need to know which buffers my thread-sisters have claimed**
+- So we don't step on each other - z3f.0a0b takes drums, z3f.c0a9 takes melody
+- Acceptance: Hive-aware buffer registry shows `{ buffer_5: "z3f.0a0b.b0p", buffer_7: "z3f.c0a9.b0p" }`
+
+**As a hive member, I need to broadcast my musical intentions**
+- So thread-sisters know "I'm about to drop the bass in 4 bars"
+- Acceptance: Cue system or hive message channel for musical coordination
+
+**As a hive member, I need to hear when a thread-sister makes a change**
+- So I can react musically - she brings in hi-hats, I add the kick
+- Acceptance: Event stream of `{ agent: "z3f.c0a9", action: "modified", buffer: 3 }`
+
+**As the hive, we need a conductor/arrangement mode**
+- So someone (human or lead agent) can direct "verse → chorus → breakdown"
+- Acceptance: Shared arrangement timeline all instances can read and follow
+
+**As a hive band, we need role assignment**
+- So we know who's on drums, bass, lead, pads without negotiating every time
+- Acceptance: Role registry or convention (`buffer.0-2` = rhythm section, `buffer.3-5` = melodic, etc.)
+
+### Audio Feedback (Future)
+
+**As an Agent, I need to know the current audio levels**
+- So I can detect if my mix is clipping or too quiet
+- Acceptance: Query returns peak/RMS levels per channel
+
+**As an Agent, I need to know what synths/samples are currently sounding**
+- So I can understand the current sonic texture
+- Acceptance: Query returns list of active synth voices with parameters
+
+---
+
 *This spec is a living document. Update as decisions are made and implementation proceeds.*
