@@ -512,19 +512,21 @@ project-folder/
 
 *Added December 2025 after first successful agent music session*
 
-### Temporal Awareness (Performance Mode)
+### Temporal Awareness (Performance Mode) ✅ SOLVED via Conductor Pattern
 
-**As an Agent, I need to know the current beat/bar position**
+**As an Agent, I need to know the current beat/bar position** ✅
 - So I can time my changes to land on musically appropriate boundaries
 - Acceptance: Query returns `{ bar: 12, beat: 3, bpm: 128 }`
+- **Solution**: Conductor pattern writes `status.json` - see "Implemented Solutions" section
 
 **As an Agent, I need to know which live_loops are active and their cycle position**
 - So I can sync changes to loop boundaries instead of interrupting mid-phrase
 - Acceptance: Query returns loop name, iteration count, beats per cycle, current beat in cycle
 
-**As an Agent, I need to know when the next bar/phrase starts**
+**As an Agent, I need to know when the next bar/phrase starts** ✅
 - So I can schedule a file write to arrive just before a musical boundary
 - Acceptance: Query returns milliseconds until next bar 1
+- **Solution**: `bars_remaining` field in status.json + BPM = calculate timing
 
 **As an Agent, I need to receive cues when loops cycle**
 - So I can react to musical events rather than polling constantly
@@ -601,6 +603,250 @@ project-folder/
 **As a hive band, we need role assignment**
 - So we know who's on drums, bass, lead, pads without negotiating every time
 - Acceptance: Role registry or convention (`buffer.0-2` = rhythm section, `buffer.3-5` = melodic, etc.)
+
+---
+
+## Implemented Solutions
+
+### Conductor Pattern (Temporal Awareness) ✅
+
+*Implemented December 1, 2025*
+
+**Problem**: Agent needs to know current position in song structure (section, bar, beat) to make musically-timed decisions.
+
+**Solution**: Pure Sonic Pi convention - no fork changes needed.
+
+**Components**:
+
+1. **Structure Definition**: Ruby hash defining song sections and bar counts
+2. **Conductor Loop**: Master `live_loop` that tracks position and emits cues
+3. **Status File**: JSON file written every beat with current position
+4. **Synced Loops**: Other loops sync to conductor cues
+
+**Implementation**:
+
+```ruby
+# === SONG STRUCTURE ===
+STRUCTURE = [
+  { name: :intro,     bars: 4 },
+  { name: :buildup,   bars: 8 },
+  { name: :drop,      bars: 8 },
+  { name: :breakdown, bars: 4 },
+  { name: :drop2,     bars: 8 }
+]
+
+STATUS_FILE = "/path/to/project/status.json"
+
+# === CONDUCTOR - Master Clock ===
+live_loop :conductor do
+  use_real_time
+
+  STRUCTURE.each_with_index do |section, section_idx|
+    section_name = section[:name]
+    total_bars = section[:bars]
+
+    total_bars.times do |bar_idx|
+      bar_num = bar_idx + 1
+      bars_left = total_bars - bar_num
+
+      # Set shared state for other loops
+      set :section, section_name
+      set :bar, bar_num
+      set :bars_remaining, bars_left
+
+      4.times do |beat_idx|
+        beat_num = beat_idx + 1
+        set :beat, beat_num
+
+        # Write status for agent
+        status = {
+          bpm: current_bpm,
+          section: section_name.to_s,
+          bar: bar_num,
+          beat: beat_num,
+          bars_in_section: total_bars,
+          bars_remaining: bars_left,
+          section_index: section_idx,
+          total_sections: STRUCTURE.length,
+          timestamp: Time.now.to_f
+        }
+        File.write(STATUS_FILE, JSON.generate(status))
+
+        cue :beat
+        cue :downbeat if beat_num == 1
+        sleep 1
+      end
+    end
+
+    cue :section_change
+  end
+end
+
+# === OTHER LOOPS sync to conductor ===
+live_loop :drums do
+  sync :beat
+  section = get[:section]
+  # ... make decisions based on section
+end
+```
+
+**Status File Output**:
+```json
+{
+  "bpm": 128.0,
+  "section": "drop",
+  "bar": 4,
+  "beat": 2,
+  "bars_in_section": 8,
+  "bars_remaining": 4,
+  "section_index": 2,
+  "total_sections": 5,
+  "timestamp": 1764598232.169054
+}
+```
+
+**Agent Usage**:
+```bash
+# Poll current position
+cat /path/to/project/status.json | jq .
+
+# Watch in real-time
+watch -n 0.5 cat /path/to/project/status.json
+```
+
+**Key Insights**:
+- Structure comes from the agent/composer, not the runtime
+- Conductor is the "click track" - keeps everything synced
+- Other loops make musical decisions based on `get[:section]`, `get[:bar]`, etc.
+- File output enables agent to read position without code injection
+- Pure convention - works with vanilla Sonic Pi
+
+**Limitations**:
+- Requires conductor pattern in every composition (boilerplate)
+- File I/O on every beat (could optimize to every bar)
+- Agent must know project path to read status file
+
+**Future Enhancements**:
+- Template/helper for conductor boilerplate
+- Configurable status file path in project settings
+- WebSocket alternative to file polling (lower latency)
+
+---
+
+### Scheduled Execution (Cue System) 🚧 IN DESIGN
+
+*Designed December 1, 2025*
+
+**Problem**: Agent writes code, but execution timing depends on human clicking Run. Can't reliably hit musical boundaries (bar 1, section changes).
+
+**Insight**: Other live coding systems (Tidal, Strudel) don't solve this - they assume immediate execution. DJ software has cue points. We need cue points for code.
+
+**Solution**: Comment-based scheduling annotations parsed by the conductor.
+
+**Syntax**:
+```ruby
+#@cue:next_bar
+live_loop :kick do
+  # This version activates on next bar 1
+  sample :bd_haus, amp: 0.9
+  sleep 1
+end
+
+#@cue:next_section
+live_loop :bass do
+  # This version waits for section change (intro→buildup, etc)
+  use_synth :dsaw
+  play :c1, release: 0.4
+  sleep 1
+end
+
+#@cue:immediate
+live_loop :hats do
+  # Explicit: activate now (default behavior if no annotation)
+  sample :drum_cymbal_closed
+  sleep 0.5
+end
+
+#@cue:bar:16
+live_loop :lead do
+  # Activate when we reach bar 16
+  ...
+end
+```
+
+**How It Works**:
+
+1. **File Change Detection**: GUI detects buffer edit (existing file watcher)
+
+2. **Annotation Parser**: Before executing, scan for `#@cue:` comments
+   - Extract annotated blocks (comment + following `live_loop`/`define`/block)
+   - Determine trigger condition per block
+
+3. **Immediate Execution**: Blocks with `#@cue:immediate` or no annotation → run now
+
+4. **Queued Execution**: Blocks with timing annotations → store in pending queue
+   ```ruby
+   @pending_cues = {
+     next_bar: [{name: :kick, code: "live_loop :kick do..."}],
+     next_section: [{name: :bass, code: "live_loop :bass do..."}],
+     bar_16: [{name: :lead, code: "live_loop :lead do..."}]
+   }
+   ```
+
+5. **Conductor Integration**: On each boundary, check queue and eval matching code
+   ```ruby
+   # In conductor loop
+   cue :downbeat if beat_num == 1
+   fire_pending_cues(:next_bar) if beat_num == 1
+   fire_pending_cues(:next_section) if section_changed
+   fire_pending_cues("bar_#{current_bar}".to_sym)
+   ```
+
+6. **Loop Replacement**: When firing a cued `live_loop`, it naturally replaces the running loop of the same name (Sonic Pi's existing behavior)
+
+**Visual Feedback** (future):
+- GUI could highlight cued blocks with different color
+- Show countdown: "bass activates in 3 bars"
+- Status bar: "2 changes pending"
+
+**Agent Workflow**:
+```
+1. Read status.json → "we're in buildup, drop in 8 bars"
+2. Write to buffer:
+   #@cue:next_section
+   live_loop :bass do
+     # heavier bass for drop
+   end
+3. File saves → GUI parses → queues the change
+4. Conductor reaches section boundary → bass loop hot-swaps
+5. No Run button needed, no timing anxiety
+```
+
+**Human Workflow**:
+```
+1. Type #@cue:next_bar above a loop
+2. Edit the loop
+3. Auto-save triggers
+4. Change goes live on next bar 1
+5. Same experience as agent
+```
+
+**Key Insight**: Single file, inline annotations, visible to both human and agent. The code IS the plan. Comments are scheduling instructions.
+
+**Implementation Location**:
+- Parser: New module in Spider server (Ruby) or GUI (C++/Qt)
+- Queue: Spider server state (accessible via conductor)
+- Could also be pure Ruby helper loaded via init.rb
+
+**Research Notes**:
+- Tidal/Strudel use queryArc model - pattern changes take effect on next query (~50-150ms)
+- No existing system has per-block boundary-aware scheduling
+- Closest analog: DJ software cue points, but for code blocks
+- [Strudel MCP Server](https://github.com/williamzujkowski/strudel-mcp-server) uses Playwright browser automation
+
+**Status**: Design complete, ready for prototype
+
+---
 
 ### Audio Feedback (Future)
 

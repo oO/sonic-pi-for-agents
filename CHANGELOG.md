@@ -9,6 +9,13 @@ For the original Sonic Pi changelog, see [sonic-pi/CHANGELOG.md](sonic-pi/CHANGE
 
 ## [Unreleased]
 
+## [0.3.2] - 2025-12-01
+
+### Added
+- Documented Conductor Pattern solution for temporal awareness (agent reads song position from status.json)
+- Documented Cue System design for scheduled execution (comment-based timing annotations)
+- Marked related user stories as solved in DEV-SPEC.md
+
 ## [0.3.1] - 2025-12-01
 
 ### Fixed
